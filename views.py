@@ -16,7 +16,7 @@ def send_part_information(num_parts, part_type_id):
 	url = "http://127.0.0.1:5000/inventory/{}/{}".format(num_parts, part_type_id)
 	for part in range(int(num_parts)):
 		part_row = {}
-		part_row["id"] = random.randint(1,1000) #hackerman
+		part_row["id"] = random.randint(1,1000) 
 		part_row["model"] = random.choice(phone_models)
 		part_row["part_type"] = part_type_id
 		part_row["defective"] = False
@@ -87,19 +87,74 @@ def phone_orders():
     print(r.status_code)
     return app.make_response((r.content, r.status_code, {'Content-Type': 'application/json'}))
 
-
+@app.route('/inventory/send', methods=['POST'])
 def send_broken_phones(phoneRow):
-	pass
+	phone_models = ['h', 'm', 'l', 'f']
+	phone={}
+	phone["id"] = random.randint(1,1000)
+	phone["model"] = random.choice(phone_models)
+	phone["status"] = "Broken"
+	phone["screen"] = random.randint(1,1000)
+	phone["memory"] = random.randint(1,1000)
+	phone["keyboard"] = random.randint(1,1000)
+	r = requests.post("http://127.0.0.1/inventory", data=json.dumps(phone))
+	return json.dumps({'success':True}), 200, {'ContentType':'application/json'}
 
+@app.route('/inventory', methods=['POST'])
 def receive_fixed_phones(phoneRow):
-	pass
+	num_phones = random.randint(1,10)
+	phone_models = ['h', 'm', 'l', 'f']
+	phones=[]
+	for phone in range(num_phones):
+		phone_row = {}
+		phone_row["id"] = random.randint(1,100)
+		phone_row["model"] = random.choice(phone_models)
+		phone_row["status"] = "Refurbished"
+		phone_row["screen"] = random.randint(1,1000)
+		phone_row["memory"] = random.randint(1,1000)
+		phone_row["keyboard"] = random.randint(1,1000)
+		phones.append(phone_row)
+	r = requests.post("http://127.0.0.1/inventory", data=json.dumps(phones))
+	return json.dumps({'success':True}), 200, {'ContentType' : "application/json"}
+
+@app.route('/inventory/phones/order', methods=['POST'])
 def create_new_phones(orderQuantity, phoneModelId):
-	pass
+	r = requests.post("http://127.0.0.1/manufacturing/order", orderQuantity, phoneModelId)
+	return json.dumps({'success':True}), 200, {'ContentType' : 'application/json'}
+
+@app.route('/inventory/models/all', methods=["GET"])
 def all_phone_models():
-	pass
+	phone_models = ['h', 'm', 'l', 'f']
+	all_models = []
+	for model in phone_models:
+		all_models.append({"id":phone_models.index(model), "model":model, "description":model, "price":25*phone_models.index(model)})
+
+	return json.dumps(all_models)
+
+@app.route('/inventory/models/<phoneModelId>', methods=['GET'])
 def holding_sales_hand_through_indexing(phoneModelId):
-	pass
+	phone_models = ['h', 'm', 'l', 'f']
+	return json.dumps({"id": phoneModelId, "model" : phone_models[int(phoneModelId)%4], "description": phone_models[int(phoneModelId)%4], "price":25*int(phoneModelId),
+		"memory" : random.randint(1,1000),
+		"screen" : random.randint(1,1000),
+		"keyboard" : random.randint(1,1000)})
+
+
+@app.route('/inventory/phone/return?phoneid=<phoneId>', methods=['GET'])	
 def mark_as_returned(phoneId):
-	pass
+
+	return json.dumps({'success':True}, 200, {'ContentType' : 'application/json'})
+
+@app.route('/inventory/phones/<phoneId>', methods=['GET'])	
 def get_phone_by_id(phoneId):
-	pass
+	phone_models = ['h', 'm', 'l', 'f']
+	statuses = ['New', 'Broken', 'Refurbished']
+	phone = {}
+	phone['id'] = phoneId
+	phone['model'] = random.choice(phone_models)
+	phone['status'] =  random.choice(statuses)
+	phone['screen'] = random.randint(1,1000)
+	phone['memory'] = random.randint(1,1000)
+	phone['keyboard'] = random.randint(1,1000)
+	return json.dumps(phone)
+
