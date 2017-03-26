@@ -17,6 +17,7 @@ class Part(db.Model):
         self.defective = False
 
 
+
 phoneParts = db.Table('phone_parts',
     db.Column('phone_id', db.Integer, db.ForeignKey('phones.id')),
     db.Column('part_id', db.Integer, db.ForeignKey('parts.id'))
@@ -79,6 +80,7 @@ class PartType(db.Model):
     endDate = db.Column(db.DateTime)
     deletedAt = db.Column(db.DateTime)
     parts = db.relationship('Part', backref='part_type', lazy='dynamic')
+
     # phoneTypes = db.relationship('PhoneType', backref='part_types', lazy='dynamic')
     batteryPart = db.relationship('PhoneType', backref='battery', lazy='dynamic', foreign_keys='[PhoneType.batteryTypeId]')
     screenPart = db.relationship('PhoneType', backref='screen', lazy='dynamic', foreign_keys='[PhoneType.screenTypeId]')
