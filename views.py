@@ -88,3 +88,18 @@ def phone_orders():
     return app.make_response((r.content, r.status_code, {'Content-Type': 'application/json'}))
 
 
+def send_broken_phones(phoneRow):
+	pass
+
+def receive_fixed_phones(phoneRow):
+	pass
+def create_new_phones(orderQuantity, phoneModelId):
+	pass
+def all_phone_models():
+	pass
+def holding_sales_hand_through_indexing(phoneModelId):
+	pass
+def mark_as_returned(phoneId):
+	pass
+def get_phone_by_id(phoneId):
+	pass
