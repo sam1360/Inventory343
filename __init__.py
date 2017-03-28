@@ -3,7 +3,6 @@ from flask_sqlalchemy import SQLAlchemy
 import os
 
 
-
 def db_connect():
     """
     Performs database connection using database settings from settings.py.
