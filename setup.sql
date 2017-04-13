@@ -41,6 +41,3 @@ INSERT INTO `parts` (`modelType`, `defective`, `used`, `partTypeId`, `phoneId`, 
 INSERT INTO `phones` (`status`,`modelId`,`saleDate`,`returnDate`,`refurbishedDate`, `Bogo`) VALUES ('New', 1, datetime('now'), datetime('now'), datetime('now'),0);
 INSERT INTO `phones` (`status`,`modelId`,`saleDate`,`returnDate`,`refurbishedDate`, `Bogo`) VALUES ('Broken', 2, datetime('now'), datetime('now'), datetime('now'), 0);
 INSERT INTO `phones` (`status`,`modelId`,`saleDate`,`returnDate`,`refurbishedDate`, `Bogo`) VALUES ('Refurbished', 2, datetime('now'), datetime('now'), datetime('now'), 0);
-INSERT INTO `phones` (`status`,`modelId`,`saleDate`,`returnDate`,`refurbishedDate`, `Bogo`) VALUES ('Broken', 3, datetime('now'), datetime('now'), datetime('now'), 0);
-INSERT INTO `phones` (`status`,`modelId`,`saleDate`,`returnDate`,`refurbishedDate`, `Bogo`) VALUES ('New', 4, datetime('now'), datetime('now'), datetime('now'), 0);
-
