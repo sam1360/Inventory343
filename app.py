@@ -8,17 +8,6 @@ db.create_all()
 
 db.create_all()
 import model
-<<<<<<< HEAD
-
-@app.route("/")
-def hello():
-	dummyphones = open('DummyData/dummyphonetable.csv')
-	dummyparts = open('DummyData/dummypartstable.csv')
-	dummyavailable = open('DummyData/dummyavailablephones.csv')
-
-	return render_template('layout.html', table1data = csv.reader(dummyphones), table2data = csv.reader(dummyparts), table3data = csv.reader(dummyavailable))
-=======
->>>>>>> upstream/master
 
 
 if __name__ == "__main__":
