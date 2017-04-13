@@ -7,7 +7,7 @@ import csv
 db.create_all()
 
 db.create_all()
-import models
+import model
 
 @app.route("/")
 def hello():

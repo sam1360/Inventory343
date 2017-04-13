@@ -30,7 +30,7 @@ part model options:
 
 
 @app.route('/inventory/get-parts/<num_parts>/<part_type_id>', methods=['GET'])
-def send_part_information(num_parts_requested, part_type_id):
+def send_part_information(num_parts, part_type_id):
 	'''
 	Sends the part information for the number and type of part specified.
 	'''
