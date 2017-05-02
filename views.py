@@ -52,8 +52,6 @@ def landing():
 			final_name = ''
 			span = cap_loc.span()
 			final_name = (part.partName[:span[0]] + ' ' + part.partName[span[0]:]).title()
-
-			print(final_name)
 		else:
 			final_name = part.partName.title()
 		part_names[part.id] = final_name
@@ -72,8 +70,48 @@ def in_inventory(phone):
 			return False
 
 @app.route('/inventory/parts/purchase', methods=['GET'])		
-def purchase_parts():
-	return render_template('purchase.html')
+def purchase_parts_form():
+	part_names = {}
+	part_types = PartType.query.all()
+
+	return render_template('purchase.html', part_types=part_types)
+
+@app.route('/inventory/parts/accounting', methods=['GET', 'POST'])		
+def purchase_parts_accounting():
+	result = request.form
+	part_request_name = result['part_type']
+	part_request_amount = result['part_amount']
+	part_info = PartType.query.filter_by(partName=part_request_name).first()
+	part_price = part_info.price
+	total_price = float(part_price)*float(part_request_amount)
+
+	purchase_dict = {"amount": total_price}
+	jsonify(purchase_dict)
+	requests.post('http://vm343e.se.rit.edu/inventory', json=purchase_dict)
+
+	"""
+	#for part in part_request_amount:
+		#get part type id
+		#Get model
+		#defective=False
+		#used=False
+		#phoneId
+		#bogo=False
+		self.partTypeId = partType
+        self.modelType = modelType
+        self.defective = False
+        self.used = False
+        phoneId = phoneId
+        bogo = False
+    """
+	return redirect(url_for('landing'))
+
+
+@app.route('/inventory/phone/recall/<model_id>')
+def mark_as_recalled(model_id):
+
+	return app.make_response(('200', {'Content-Type': 'application/json'}))
+
 
 @app.route('/inventory/get-parts/<num_parts>/<part_type_id>', methods=['GET'])
 def send_part_information(num_parts, part_type_id):
