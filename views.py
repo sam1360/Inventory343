@@ -85,9 +85,7 @@ def purchase_parts_accounting():
 
 	purchase_dict = {"amount": total_price}
 	jsonify(purchase_dict)
-	#requests.post('http://vm343e.se.rit.edu/inventory', json=purchase_dict)
-
-
+	requests.post('http://vm343e.se.rit.edu/inventory', json=purchase_dict)
 	model_info = None
 
 	model_info = PhoneType.query.filter_by(screenTypeId=part_info.id).first()
@@ -95,21 +93,16 @@ def purchase_parts_accounting():
 		model_info = PhoneType.query.filter_by(batteryTypeId=part_info.id).first()
 		if not model_info:
 			model_info = PhoneType.query.filter_by(memoryTypeId=part_info.id).first()
-
-
 	num_created = 0
 	partType = part_info.id
-	modelType=model_info.id
+	modelType = model_info.id
 
 	request_amount = round(float(part_request_amount))
 	while num_created < request_amount:
 		part = Part(partType, modelType)
 		db.session.add(part)
 		num_created += 1
-
 	db.session.commit()
-
-
 	return redirect(url_for('landing'))
 
 
@@ -147,10 +140,15 @@ def send_part_information(num_parts, part_type_id):
 	'''
 	Sends the part information for the number and type of part specified.
 	'''
+	sent=0
 	output = []
-	parts_to_send = Part.query.filter_by( partTypeId=part_type_id and Part.phoneId == None ).all()
+	parts_to_send = Part.query.filter_by( partTypeId=part_type_id).filter_by(phoneId =None ).all()
 	for part_to_send in parts_to_send:
-		output.append( to_json_like_string(part_to_send))
+		if part_to_send.phoneId == None:
+			output.append( to_json_like_string(part_to_send))
+			sent += 1
+			if sent >= int(num_parts):
+				break
 	return jsonify(output)
 
 @app.route('/inventory/phones/order', methods=['GET', 'POST'])
@@ -167,14 +165,75 @@ def send_broken_phones():
 	for phone_to_send in phones_to_send:
 		output.append(to_json_like_string(phone_to_send)[0]["fields"])
 	return jsonify((output))
-	
 
 @app.route('/inventory/', methods=["POST"])
-def receive_fixed_phones():
+def receive_phones():
 	'''
 	Receives either new phones or refurbished phones from manufacturing with replaced parts
 	'''
-	return json.dumps({'success':True}), 200, {'ContentType' : "application/json"}
+	phones = request.get_json()
+	print(phones)
+	phone_type = ''
+
+	if phones["phones"][0]["status"].lower() == 'new':
+		phone_type = 'new'
+	elif phones["phones"][0]["status"].lower() == 'refurbished':
+		phone_type = 'refurbished'
+	print(phone_type)
+
+	if phone_type == 'new':
+		for phone in phones["phones"]:
+			modelId = phone["modelID"]
+			status = phone["status"]
+			phone_to_add = Phone(status, modelId)
+			print(phone_to_add.id)
+			db.session.add(phone_to_add)
+
+			screen, battery, memory = phone["partIDs"]
+
+			db_screen = Part.query.filter_by(id=screen).first()
+			db_screen.phoneId = phone_to_add.id
+			db_screen.used = True
+
+			db_battery = Part.query.filter_by(id=battery).first()
+			db_battery.phoneId = phone_to_add.id
+			db_battery.used=True
+
+			db_memory = Part.query.filter_by(id=memory).first()
+			db_memory.phoneId = phone_to_add.id
+			db_memory.used=True
+
+			db.session.commit()
+	elif phone_type == 'refurbished':
+		for phone in phones["phones"]:
+			phoneId = phone["phoneID"]
+			db_phone = Phone.query.filter_by(id=phoneId).first()
+			db_phone.status = "Refurbished"
+			db_phone.refurbishedDate = datetime.datetime.now()
+
+			screen, battery, memory = phone["partIDs"]
+			broken = phone["broken"]
+
+			db_broken = Part.query.filter_by(id=broken).first()
+			db_broken.defective=True
+			db_broken.phoneId = None
+			db_broken.used=False
+
+			db_screen = Part.query.filter_by(id=screen).first()
+			db_screen.phoneId = phoneId
+			db_screen.used=True
+
+			db_battery = Part.query.filter_by(id=battery).first()
+			db_battery.phoneId = phoneId
+			db_battery.used=True
+
+			db_memory = Part.query.filter_by(id=memory).first()
+			db_memory.phoneId = phoneId
+			db_memory.used=True
+			db.session.commit()
+
+
+	return app.make_response(('200', {'Content-Type': 'application/json'}))
 
 
 @app.route('/inventory/models/all', methods=["GET"])
