@@ -121,17 +121,16 @@ def mark_as_recalled(model_id):
 	get_phone_type = PhoneType.query.filter_by(id = model_id)
 	for phone_type in get_phone_type:
 		phone_type.isRecalled = True
-	get_phones = Phone.query.filter_by(model_id=model_id)
-	get_parts = Part.query.all()
+	get_phones = Phone.query.filter_by(modelId=model_id)
 	for phone in get_phones:
 		phone.status = "Recalled"
+		get_parts = Part.query.filter_by(phoneId=phone.id)
 		# Mark all the parts for each phone as recalled.
 		for part in get_parts:
-			if part.phoneId == phone.id:
-				part.isRecalled = True
+			part.isRecalled = True
 
 
-
+	db.session.commit()
 	return app.make_response(('200', {'Content-Type': 'application/json'}))
 
 
@@ -172,21 +171,18 @@ def receive_phones():
 	Receives either new phones or refurbished phones from manufacturing with replaced parts
 	'''
 	phones = request.get_json()
-	print(phones)
 	phone_type = ''
 
 	if phones["phones"][0]["status"].lower() == 'new':
 		phone_type = 'new'
 	elif phones["phones"][0]["status"].lower() == 'refurbished':
 		phone_type = 'refurbished'
-	print(phone_type)
 
 	if phone_type == 'new':
 		for phone in phones["phones"]:
 			modelId = phone["modelID"]
 			status = phone["status"]
 			phone_to_add = Phone(status, modelId)
-			print(phone_to_add.id)
 			db.session.add(phone_to_add)
 
 			screen, battery, memory = phone["partIDs"]
@@ -264,7 +260,6 @@ def mark_as_returned(phoneId):
 	db.session.commit()
 	
 	modelId = returned_phone.modelId
-	print(returned_phone.returnDate)
 
 	#from model id, get part ids
 	model_information = PhoneType.query.filter_by(id=modelId).first()
@@ -286,15 +281,18 @@ def mark_as_returned(phoneId):
 @app.route('/inventory/phone/order/<modelId>/<numPhones>', methods=['GET'])
 def get_phones(modelId, numPhones):
 	phones = Phone.query.filter(Phone.modelId==modelId).limit(numPhones).all()
-	output = to_json_like_string(phones)[0]["fields"]
+	output=[]
+	for phone in phones:
+		output.append(to_json_like_string(phone)[0]["fields"])
+		
 	return jsonify(output)
 
 @app.route('/inventory/phone/mark_bogo/<phoneId>', methods=['GET'])
 def mark_as_bogo(phoneId):
-	bogo_phogo = Phone.query.filter(Phone.Id == phoneId).first()
-	bogo_phogo.Bogo = 1
+	bogo_phogo = Phone.query.filter(Phone.id == phoneId).first()
+	bogo_phogo.bogo = True
 	db.session.commit()
-	return jsonify((bogo_phogo))
+	return jsonify(to_json_like_string(bogo_phogo)[0]["fields"])
 
 @app.route('/inventory/phones/<phoneId>', methods=['GET'])	
 def get_phone_by_id(phoneId):
@@ -302,7 +300,7 @@ def get_phone_by_id(phoneId):
 	Returns a specific phone based on its uid, or serial number
 	'''
 	phone_to_send = Phone.query.filter(Phone.id==phoneId).first()
-	output = to_json_like_string(phone_to_send)
+	output = to_json_like_string(phone_to_send)[0]["fields"]
 	return jsonify((output))
 
 
